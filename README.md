@@ -29,7 +29,7 @@ options:
 ```
 
 Examples:
-``` python
+```sh
 python upload.py -d directory
 python upload.py -f file.mp4 -s
 ```

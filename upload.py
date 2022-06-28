@@ -10,6 +10,7 @@ from pathlib import Path
 from requests_toolbelt import MultipartEncoder, MultipartEncoderMonitor
 import subprocess
 from datetime import timedelta
+import json
 
 
 class ZPUploadException(Exception):
@@ -165,7 +166,7 @@ class ZPUploader:
             try:
                 html, pb = future.result()
                 u = self.get_upload_url(html)
-                d[p] = u
+                d[p.name] = u
                 pb.write(f"{p} uploaded to {u}")
             except Exception as ex:
                 print(ex)
@@ -265,7 +266,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--split", "-s", action="store_true", help="Whether to zip files or not"
     )
-    parser.add_argument("--output", "-o", nargs=1, type=Path, help="Output file")
+    parser.add_argument("--output", "-o", type=Path, help="Output file")
     parser.add_argument(
         "--retries",
         "-r",
@@ -321,6 +322,12 @@ if __name__ == "__main__":
     uploader = ZPUploader(files, args.split, args.retries)
     try:
         dict_ = uploader.upload()
+        json = json.dumps(dict_, ensure_ascii=False).encode("utf-8")
+        print(f"\n{json.decode()}")
+        if args.output:
+            with args.output.open(mode="w+") as f:
+                f.write(json.decode())
+                print(f"Written to file: \"{args.output.name}\"")
     except KeyboardInterrupt:
         print("\nSTOPPING ALL UPLOADS...\n")
         uploader.stop(interrupt=True)
